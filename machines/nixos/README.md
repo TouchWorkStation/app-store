@@ -31,7 +31,7 @@ The `machines/nixos/vm` flake defines `nixosConfigurations.modc-vm` (qemu-guest 
 cd machines/nixos/vm && nix build .#qcow2 -L
 ```
 
-The installable artifact is `packages.x86_64-linux.qcow2`; the flake output name is `qcow2` (`result/nixos.qcow2`). The same `make-disk-image` invocation used in `vm/flake.nix` can be reused in CI by evaluating `nixosConfigurations.modc-vm` and calling `import nixpkgs/nixos/lib/make-disk-image.nix` with `format = "qcow2"` and `diskSize = 8192`.
+The installable artifact is `packages.x86_64-linux.qcow2`; the flake output name is `qcow2` (`result/nixos.qcow2`). CI uses nixpkgs `make-disk-image` with `format = "qcow2-compressed"` and `diskSize = 8192` so the uploaded asset stays under GitHub’s 2 GiB release limit.
 
 ## Incus container image
 
