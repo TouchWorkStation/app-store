@@ -44,7 +44,10 @@ cd machines/nixos/container && nix build .#squashfs .#metadata -L
 Outputs mirror Hydra’s `incusContainerImage` / `incusContainerMeta` names as `packages.x86_64-linux.squashfs` and `.metadata` (aliases `incusContainerImage`, `incusContainerMeta`). Import both into Incus, then launch a privileged container with nesting so `nixos-rebuild` can run inside the guest:
 
 ```bash
-incus image import --alias modc-nixos result/ metadata.tar.gz
+# After nix build: squashfs is a Hydra-style dir with *.squashfs; metadata is tarball/*.tar.xz
+incus image import --alias modc-nixos result/ result-metadata/tarball/*.tar.xz
+# Or from a CI release:
+# incus image import modc-nixos-24.11-amd64.squashfs modc-nixos-24.11-amd64-metadata.tar.xz --alias modc-nixos
 incus launch modc-nixos my-modc -c security.nesting=true -c security.privileged=true
 incus config device add my-modc nixos-config disk source=/path/on/host/to/config path=/modc/nixos-config readonly=true
 ```

@@ -61,18 +61,39 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
+
+          # qcow2: make-disk-image may emit a file or a dir with nixos.qcow2
           qcow="$(readlink -f machines/nixos/vm/qcow2)"
           if [ -f "$qcow" ]; then
             cp "$qcow" "release/${PREFIX}.qcow2"
           else
             cp "$qcow"/nixos.qcow2 "release/${PREFIX}.qcow2"
           fi
-          cp "$(readlink -f machines/nixos/container/squashfs)" "release/${PREFIX}.squashfs"
-          cp "$(readlink -f machines/nixos/container/metadata)" "release/${PREFIX}-metadata.tar.gz"
+
+          # squashfs: nixpkgs LXC build uses hydraBuildProduct → dir/*.squashfs
+          squash="$(readlink -f machines/nixos/container/squashfs)"
+          if [ -f "$squash" ]; then
+            cp "$squash" "release/${PREFIX}.squashfs"
+          else
+            sq="$(find "$squash" -maxdepth 1 -type f -name '*.squashfs' | head -n 1)"
+            test -n "$sq"
+            cp "$sq" "release/${PREFIX}.squashfs"
+          fi
+
+          # metadata: make-system-tarball → tarball/*.tar.xz
+          meta="$(readlink -f machines/nixos/container/metadata)"
+          if [ -f "$meta" ]; then
+            cp "$meta" "release/${PREFIX}-metadata.tar.xz"
+          else
+            mt="$(find "$meta" -type f \( -name '*.tar.xz' -o -name '*.tar.gz' \) | head -n 1)"
+            test -n "$mt"
+            cp "$mt" "release/${PREFIX}-metadata.tar.xz"
+          fi
+
           tar -cJf "release/${PREFIX}.incus.tar.xz" \
             -C release \
             "${PREFIX}.squashfs" \
-            "${PREFIX}-metadata.tar.gz"
+            "${PREFIX}-metadata.tar.xz"
           cd release
           for f in "${PREFIX}.qcow2" "${PREFIX}.squashfs" "${PREFIX}.incus.tar.xz"; do
             sha256sum "$f" | awk '{print $1}' > "${f}.sha256"
