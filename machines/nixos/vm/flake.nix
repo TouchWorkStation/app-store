@@ -17,7 +17,7 @@
           ../module
           ({ lib, pkgs, ... }: {
             networking.hostName = "nixos";
-            services.qemu-guest.enable = true;
+            services.qemuGuest.enable = true;
             system.stateVersion = "24.11";
 
             # QCOW2 / virtio disk layout (make-disk-image + grow on first boot).
