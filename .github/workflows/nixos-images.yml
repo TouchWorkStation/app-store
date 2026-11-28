@@ -1,0 +1,100 @@
+name: MODC NixOS images
+
+# Build VM qcow2 and Incus container artifacts; publish on tag or manual dispatch.
+on:
+  push:
+    tags:
+      - "nixos-v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Git tag for the GitHub release (e.g. nixos-v24.11.0)"
+        required: true
+        default: "nixos-v24.11.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Resolve release tag and version slug
+        id: meta
+        env:
+          INPUT_TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="${INPUT_TAG}"
+          fi
+          if ! echo "$TAG" | grep -qE '^nixos-v'; then
+            echo "Release tag must start with nixos-v (got: $TAG)" >&2
+            exit 1
+          fi
+          VERSION="${TAG#nixos-v}"
+          SLUG="$(echo "$VERSION" | sed -E 's/\.[0-9]+$//')"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "prefix=modc-nixos-${SLUG}-amd64" >> "$GITHUB_OUTPUT"
+
+      - name: Build VM qcow2
+        working-directory: machines/nixos/vm
+        run: nix build .#qcow2 -L --out-link qcow2
+
+      - name: Build Incus squashfs and metadata
+        working-directory: machines/nixos/container
+        run: |
+          nix build .#squashfs -L --out-link squashfs
+          nix build .#metadata -L --out-link metadata
+
+      - name: Package release assets
+        env:
+          PREFIX: ${{ steps.meta.outputs.prefix }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          qcow="$(readlink -f machines/nixos/vm/qcow2)"
+          if [ -f "$qcow" ]; then
+            cp "$qcow" "release/${PREFIX}.qcow2"
+          else
+            cp "$qcow"/nixos.qcow2 "release/${PREFIX}.qcow2"
+          fi
+          cp "$(readlink -f machines/nixos/container/squashfs)" "release/${PREFIX}.squashfs"
+          cp "$(readlink -f machines/nixos/container/metadata)" "release/${PREFIX}-metadata.tar.gz"
+          tar -cJf "release/${PREFIX}.incus.tar.xz" \
+            -C release \
+            "${PREFIX}.squashfs" \
+            "${PREFIX}-metadata.tar.gz"
+          cd release
+          for f in "${PREFIX}.qcow2" "${PREFIX}.squashfs" "${PREFIX}.incus.tar.xz"; do
+            sha256sum "$f" | awk '{print $1}' > "${f}.sha256"
+          done
+          ls -la
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: MODC NixOS ${{ steps.meta.outputs.slug }}
+          draft: false
+          prerelease: false
+          files: |
+            release/${{ steps.meta.outputs.prefix }}.qcow2
+            release/${{ steps.meta.outputs.prefix }}.qcow2.sha256
+            release/${{ steps.meta.outputs.prefix }}.squashfs
+            release/${{ steps.meta.outputs.prefix }}.squashfs.sha256
+            release/${{ steps.meta.outputs.prefix }}.incus.tar.xz
+            release/${{ steps.meta.outputs.prefix }}.incus.tar.xz.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

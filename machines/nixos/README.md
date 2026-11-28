@@ -50,3 +50,20 @@ incus config device add my-modc nixos-config disk source=/path/on/host/to/config
 ```
 
 `security.nesting=true` is required for Nix sandboxing/builds in unprivileged containers; `security.privileged=true` is the usual MODC default when the guest must rebuild itself. Adjust if your threat model allows only nesting with a custom Incus profile.
+
+## CI releases
+
+GitHub Actions workflow [`.github/workflows/nixos-images.yml`](../../.github/workflows/nixos-images.yml) builds both flakes on `ubuntu-latest` (Nix via [DeterminateSystems/nix-installer-action](https://github.com/DeterminateSystems/nix-installer-action)) and attaches checksummed assets to a GitHub release.
+
+| Trigger | Release tag |
+| --- | --- |
+| Push tag `nixos-v*` (e.g. `nixos-v24.11.0`) | The pushed tag |
+| `workflow_dispatch` | `release_tag` input (default `nixos-v24.11.0`) |
+
+Published assets (version slug is the tag without `nixos-v` and without the patch segment, e.g. `24.11`):
+
+- `modc-nixos-<slug>-amd64.qcow2` (+ `.sha256`)
+- `modc-nixos-<slug>-amd64.squashfs` (+ `.sha256`)
+- `modc-nixos-<slug>-amd64.incus.tar.xz` (squashfs + metadata bundle; + `.sha256`)
+
+After the first release, pin the qcow2 digest in `machines/catalog.json` (`checksums.sha256`) to match `modc-nixos-<slug>-amd64.qcow2.sha256`.
