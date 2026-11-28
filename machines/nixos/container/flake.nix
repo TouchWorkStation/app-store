@@ -17,15 +17,6 @@
             networking.hostName = "nixos";
             system.stateVersion = "24.11";
 
-            # Host provides the share via an Incus `disk` device at this path (see README).
-            # Drop the VM 9p fstab entry so systemd does not mount over Incus’s device.
-            fileSystems."/modc/nixos-config" = lib.mkRemove;
-
-            systemd.services.modc-nixos-config-apply = {
-              after = lib.mkForce [ "network-online.target" ];
-              wants = lib.mkForce [ "network-online.target" ];
-            };
-
             networking = {
               dhcpcd.enable = false;
               useDHCP = false;
