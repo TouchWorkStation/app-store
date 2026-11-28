@@ -22,3 +22,13 @@ After a successful rebuild, a composite SHA-256 of those files is recorded at `/
 ## Using the module
 
 Import `machines/nixos/module` in your NixOS configuration (or image flake). VM images use a 9p virtio mount tag `modc-nixos-config` at `/modc/nixos-config`; container-style images may override `fileSystems."/modc/nixos-config"` in an extra module.
+
+## VM QCOW2 image
+
+The `machines/nixos/vm` flake defines `nixosConfigurations.modc-vm` (qemu-guest profile, config-share mount, qemu-guest-agent) and builds a libvirt-style QCOW2 via nixpkgs `make-disk-image` (8 GiB, virtio, growable root).
+
+```bash
+cd machines/nixos/vm && nix build .#qcow2 -L
+```
+
+The installable artifact is `packages.x86_64-linux.qcow2`; the flake output name is `qcow2` (`result/nixos.qcow2`). The same `make-disk-image` invocation used in `vm/flake.nix` can be reused in CI by evaluating `nixosConfigurations.modc-vm` and calling `import nixpkgs/nixos/lib/make-disk-image.nix` with `format = "qcow2"` and `diskSize = 8192`.
