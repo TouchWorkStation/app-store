@@ -43,7 +43,8 @@
       packages.${system}.qcow2 = make-disk-image {
         inherit (pkgs) lib pkgs;
         config = self.nixosConfigurations.modc-vm.config;
-        format = "qcow2";
+        # qcow2-compressed stays under GitHub's 2 GiB release asset limit.
+        format = "qcow2-compressed";
         diskSize = 8192;
         partitionTableType = "hybrid";
         installBootLoader = true;
