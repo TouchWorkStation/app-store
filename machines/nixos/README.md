@@ -32,3 +32,21 @@ cd machines/nixos/vm && nix build .#qcow2 -L
 ```
 
 The installable artifact is `packages.x86_64-linux.qcow2`; the flake output name is `qcow2` (`result/nixos.qcow2`). The same `make-disk-image` invocation used in `vm/flake.nix` can be reused in CI by evaluating `nixosConfigurations.modc-vm` and calling `import nixpkgs/nixos/lib/make-disk-image.nix` with `format = "qcow2"` and `diskSize = 8192`.
+
+## Incus container image
+
+The `machines/nixos/container` flake defines `nixosConfigurations.modc-container` using nixpkgs `virtualisation/lxc-container.nix`, the shared `../module`, and container networking (`systemd-networkd` on `eth0`). It does **not** declare an fstab entry for `/modc/nixos-config`; the host must attach the config directory with an Incus **disk** device whose `path` is `/modc/nixos-config` (read-only bind from Server’s host directory).
+
+```bash
+cd machines/nixos/container && nix build .#squashfs .#metadata -L
+```
+
+Outputs mirror Hydra’s `incusContainerImage` / `incusContainerMeta` names as `packages.x86_64-linux.squashfs` and `.metadata` (aliases `incusContainerImage`, `incusContainerMeta`). Import both into Incus, then launch a privileged container with nesting so `nixos-rebuild` can run inside the guest:
+
+```bash
+incus image import --alias modc-nixos result/ metadata.tar.gz
+incus launch modc-nixos my-modc -c security.nesting=true -c security.privileged=true
+incus config device add my-modc nixos-config disk source=/path/on/host/to/config path=/modc/nixos-config readonly=true
+```
+
+`security.nesting=true` is required for Nix sandboxing/builds in unprivileged containers; `security.privileged=true` is the usual MODC default when the guest must rebuild itself. Adjust if your threat model allows only nesting with a custom Incus profile.
