@@ -24,9 +24,6 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v16
 
-      - name: Magic Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-
       - name: Resolve release tag and version slug
         id: meta
         env:
