@@ -1,18 +1,14 @@
 { lib, pkgs, ... }:
 {
-  # Fixed mount point — host bind/virtiofs target.
-  fileSystems."/modc/nixos-config" = {
-    device = "modc-nixos-config";
-    fsType = "9p"; # VM default; container images override via extra module
-    options = [ "ro" "trans=virtio" "version=9p2000.L" "x-systemd.after=dev-disk-by\\x2dlabel.device" "nofail" "x-systemd.device-timeout=30" ];
-  };
+  # Mount path is /modc/nixos-config. VMs add a 9p/virtiofs fstab entry in the
+  # image flake; Incus disk devices provide the path for containers (no fstab).
 
   systemd.services.modc-nixos-config-apply = {
     description = "Apply MODC NixOS configuration from mounted share";
     wantedBy = [ "multi-user.target" ];
-    after = [ "modc-nixos-config.mount" "network-online.target" ];
+    after = [ "local-fs.target" "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = [ pkgs.coreutils pkgs.nixos-rebuild pkgs.nix pkgs.rsync pkgs.util-linux ];
+    path = [ pkgs.coreutils pkgs.nixos-rebuild pkgs.nix pkgs.util-linux ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -23,7 +19,7 @@
       STAMP=/var/lib/modc/nixos-config.sha256
       DEST=/etc/nixos
       mkdir -p /var/lib/modc "$DEST"
-      # Wait up to ~2 minutes for the share (slow virtiofs/9p).
+      # Wait up to ~2 minutes for the share (slow virtiofs/9p or Incus disk).
       for i in $(seq 1 60); do
         if [ -d "$MOUNT" ] && [ -f "$MOUNT/configuration.nix" ]; then break; fi
         sleep 2
