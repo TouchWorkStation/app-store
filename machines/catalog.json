@@ -11,10 +11,25 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://cloud-images.ubuntu.com/releases/resolute/release/ubuntu-26.04-server-cloudimg-amd64.img",
-      "checksums": {"url": "https://cloud-images.ubuntu.com/releases/resolute/release/SHA256SUMS", "algorithm": "sha256"},
+      "checksums": {
+        "url": "https://cloud-images.ubuntu.com/releases/resolute/release/SHA256SUMS",
+        "algorithm": "sha256"
+      },
       "sizeMb": 860,
       "adminGroup": "sudo",
-      "cloudInit": {"packages": ["ubuntu-desktop-minimal"], "commands": [["systemctl", "set-default", "graphical.target"]], "graphical": true}
+      "cloudInit": {
+        "packages": [
+          "ubuntu-desktop-minimal"
+        ],
+        "commands": [
+          [
+            "systemctl",
+            "set-default",
+            "graphical.target"
+          ]
+        ],
+        "graphical": true
+      }
     },
     {
       "id": "ubuntu-26.04-server-amd64",
@@ -25,7 +40,10 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://cloud-images.ubuntu.com/releases/resolute/release/ubuntu-26.04-server-cloudimg-amd64.img",
-      "checksums": {"url": "https://cloud-images.ubuntu.com/releases/resolute/release/SHA256SUMS", "algorithm": "sha256"},
+      "checksums": {
+        "url": "https://cloud-images.ubuntu.com/releases/resolute/release/SHA256SUMS",
+        "algorithm": "sha256"
+      },
       "sizeMb": 860,
       "adminGroup": "sudo"
     },
@@ -38,7 +56,10 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img",
-      "checksums": {"url": "https://cloud-images.ubuntu.com/releases/noble/release/SHA256SUMS", "algorithm": "sha256"},
+      "checksums": {
+        "url": "https://cloud-images.ubuntu.com/releases/noble/release/SHA256SUMS",
+        "algorithm": "sha256"
+      },
       "sizeMb": 600,
       "adminGroup": "sudo"
     },
@@ -51,10 +72,25 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2",
-      "checksums": {"url": "https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS", "algorithm": "sha512"},
+      "checksums": {
+        "url": "https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS",
+        "algorithm": "sha512"
+      },
       "sizeMb": 420,
       "adminGroup": "sudo",
-      "cloudInit": {"packages": ["task-gnome-desktop"], "commands": [["systemctl", "set-default", "graphical.target"]], "graphical": true}
+      "cloudInit": {
+        "packages": [
+          "task-gnome-desktop"
+        ],
+        "commands": [
+          [
+            "systemctl",
+            "set-default",
+            "graphical.target"
+          ]
+        ],
+        "graphical": true
+      }
     },
     {
       "id": "debian-13-server-amd64",
@@ -65,7 +101,10 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2",
-      "checksums": {"url": "https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS", "algorithm": "sha512"},
+      "checksums": {
+        "url": "https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS",
+        "algorithm": "sha512"
+      },
       "sizeMb": 420,
       "adminGroup": "sudo"
     },
@@ -82,7 +121,25 @@
       "sizeMb": 584,
       "adminGroup": "wheel",
       "cloudInit": {
-        "commands": [["dnf", "install", "-y", "@workstation-product-environment", "kernel-modules"], ["systemctl", "enable", "gdm.service"], ["systemctl", "set-default", "graphical.target"]],
+        "commands": [
+          [
+            "dnf",
+            "install",
+            "-y",
+            "@workstation-product-environment",
+            "kernel-modules"
+          ],
+          [
+            "systemctl",
+            "enable",
+            "gdm.service"
+          ],
+          [
+            "systemctl",
+            "set-default",
+            "graphical.target"
+          ]
+        ],
         "graphical": true
       }
     },
@@ -108,7 +165,10 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-cloudimg.qcow2",
-      "checksums": {"url": "https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-cloudimg.qcow2.SHA256", "algorithm": "sha256"},
+      "checksums": {
+        "url": "https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-cloudimg.qcow2.SHA256",
+        "algorithm": "sha256"
+      },
       "sizeMb": 520,
       "adminGroup": "wheel"
     },
@@ -124,7 +184,13 @@
       "sha256": "20acb6673d31497bc292a8f6a075d98aa47d03cfe79ddf3c811840e60cf6f8c5",
       "sizeMb": 202,
       "adminGroup": "wheel",
-      "cloudInit": {"shell": "/bin/ash", "adminGroup": "wheel", "packages": ["sudo"]}
+      "cloudInit": {
+        "shell": "/bin/ash",
+        "adminGroup": "wheel",
+        "packages": [
+          "sudo"
+        ]
+      }
     },
     {
       "id": "modc-nixos-24.11-amd64",
@@ -135,10 +201,10 @@
       "arch": "amd64",
       "kind": "cloud",
       "url": "https://github.com/MyOwnDataCenter/app-store/releases/download/nixos-v24.11.0/modc-nixos-24.11-amd64.qcow2",
-      "checksums": {"sha256": "REPLACE_AFTER_FIRST_RELEASE"},
       "sizeMb": 1200,
       "adminGroup": "wheel",
-      "nixos": true
+      "nixos": true,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
       "id": "omarchy-4.5.0-amd64",
